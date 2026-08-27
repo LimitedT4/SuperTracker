@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Super Tracker</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2e7d32" />
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #f4f4f4; color: #222; }
+    header { background: #2e7d32; color: white; padding: 16px; text-align: center; }
+    main { padding: 16px; padding-bottom: 80px; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .card { background: white; border-radius: 10px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .precio-bueno { color: #2e7d32; font-weight: bold; }
+    .precio-caro { color: #c62828; font-weight: bold; }
+    .precio-normal { color: #555; }
+    nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: white; border-top: 1px solid #ddd; }
+    nav button { flex: 1; padding: 14px 0; border: none; background: none; font-size: 12px; color: #555; }
+    nav button.active { color: #2e7d32; font-weight: bold; }
+    button.accion { background: #2e7d32; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+    input[type="file"], input[type="text"], input[type="number"] { width: 100%; padding: 8px; margin: 6px 0; border: 1px solid #ccc; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <header><h2>Super Tracker</h2></header>
+
+  <main>
+    <!-- Pantalla 1: Inicio -->
+    <section id="inicio" class="screen active">
+      <h3>Resumen</h3>
+      <div class="card">
+        <strong>Alertas recientes</strong>
+        <p id="alertas">Aún no hay compras registradas.</p>
+      </div>
+      <div class="card">
+        <strong>Stock actual</strong>
+        <ul id="lista-stock"><li>Sin datos aún</li></ul>
+      </div>
+    </section>
+
+    <!-- Pantalla 2: Cargar boleta -->
+    <section id="boleta" class="screen">
+      <h3>Cargar boleta</h3>
+      <div class="card">
+        <input type="file" id="input-foto" accept="image/*" capture="environment" />
+        <button class="accion" id="btn-procesar" disabled>Procesar boleta (próximamente)</button>
+        <p id="estado-boleta"></p>
+      </div>
+
+      <div class="card">
+        <strong>Carga manual (mientras se conecta la IA)</strong>
+        <input type="text" id="manual-producto" placeholder="Nombre del producto" />
+        <input type="number" id="manual-precio" placeholder="Precio" />
+        <input type="number" id="manual-cantidad" placeholder="Cantidad" value="1" />
+        <input type="text" id="manual-super" placeholder="Supermercado (opcional)" />
+        <button class="accion" id="btn-guardar-manual">Guardar</button>
+        <p id="estado-manual"></p>
+      </div>
+    </section>
+
+    <!-- Pantalla 3: Modo supermercado (voz) -->
+    <section id="voz" class="screen">
+      <h3>Modo supermercado</h3>
+      <div class="card">
+        <button class="accion" id="btn-escuchar">🎤 Activar micrófono</button>
+        <p id="transcripcion">Presiona el botón y di el producto y el precio.</p>
+        <ul id="lista-voz"></ul>
+      </div>
+    </section>
+
+    <!-- Pantalla 4: Historial -->
+    <section id="historial" class="screen">
+      <h3>Historial de compras</h3>
+      <div class="card">
+        <table style="width:100%; border-collapse: collapse;" id="tabla-historial">
+          <thead>
+            <tr><th>Producto</th><th>Precio</th><th>Fecha</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button data-screen="inicio" class="active">Inicio</button>
+    <button data-screen="boleta">Boleta</button>
+    <button data-screen="voz">Voz</button>
+    <button data-screen="historial">Historial</button>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
