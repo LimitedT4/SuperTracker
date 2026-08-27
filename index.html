@@ -46,8 +46,13 @@
       <h3>Cargar boleta</h3>
       <div class="card">
         <input type="file" id="input-foto" accept="image/*" capture="environment" />
-        <button class="accion" id="btn-procesar" disabled>Procesar boleta (próximamente)</button>
+        <button class="accion" id="btn-procesar">Procesar boleta</button>
         <p id="estado-boleta"></p>
+        <div id="revision-boleta" style="display:none;">
+          <strong>Revisa antes de guardar:</strong>
+          <ul id="lista-deteccion"></ul>
+          <button class="accion" id="btn-confirmar-boleta">Confirmar y guardar todo</button>
+        </div>
       </div>
 
       <div class="card">

@@ -146,6 +146,75 @@ async function cargarHistorial() {
 }
 
 // ==============================
+// PROCESAR FOTO DE BOLETA (IA)
+// ==============================
+let productosDetectados = [];
+
+document.getElementById("btn-procesar").addEventListener("click", async () => {
+  const input = document.getElementById("input-foto");
+  const estado = document.getElementById("estado-boleta");
+
+  if (!input.files || input.files.length === 0) {
+    estado.textContent = "Primero selecciona o toma una foto.";
+    return;
+  }
+
+  estado.textContent = "Leyendo la boleta, un momento...";
+
+  const archivo = input.files[0];
+  const base64 = await new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onload = () => resolve(lector.result.split(",")[1]);
+    lector.onerror = reject;
+    lector.readAsDataURL(archivo);
+  });
+
+  try {
+    const respuesta = await fetch("/.netlify/functions/procesar-boleta", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imagenBase64: base64 }),
+    });
+
+    const resultado = await respuesta.json();
+
+    if (!resultado.productos || resultado.productos.length === 0) {
+      estado.textContent = "No se detectaron productos. Intenta con una foto más clara.";
+      return;
+    }
+
+    productosDetectados = resultado.productos;
+    estado.textContent = `Se detectaron ${productosDetectados.length} productos.`;
+
+    const lista = document.getElementById("lista-deteccion");
+    lista.innerHTML = "";
+    productosDetectados.forEach((p) => {
+      const li = document.createElement("li");
+      li.textContent = `${p.nombre} — $${p.precio} x${p.cantidad}`;
+      lista.appendChild(li);
+    });
+
+    document.getElementById("revision-boleta").style.display = "block";
+  } catch (error) {
+    estado.textContent = "Ocurrió un error al procesar la boleta.";
+    console.error(error);
+  }
+});
+
+document.getElementById("btn-confirmar-boleta").addEventListener("click", async () => {
+  const estado = document.getElementById("estado-boleta");
+  estado.textContent = "Guardando productos...";
+
+  for (const p of productosDetectados) {
+    await registrarCompra(p.nombre, p.precio, p.cantidad, "");
+  }
+
+  estado.textContent = `Se guardaron ${productosDetectados.length} productos.`;
+  document.getElementById("revision-boleta").style.display = "none";
+  productosDetectados = [];
+});
+
+// ==============================
 // CARGA MANUAL (formulario de prueba)
 // ==============================
 document.getElementById("btn-guardar-manual").addEventListener("click", async () => {
