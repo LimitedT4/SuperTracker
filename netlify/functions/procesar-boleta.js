@@ -20,7 +20,7 @@ exports.handler = async (event) => {
             content: [
               {
                 type: "text",
-                text: 'Esta imagen es una boleta de supermercado. Extrae cada producto con su precio y cantidad. Responde SOLO con un JSON válido, sin texto adicional, con este formato exacto: {"productos": [{"nombre": "string", "precio": number, "cantidad": number}]}. Si no puedes leer algo, omítelo.',
+                text: 'Analiza esta boleta de supermercado. Identifica cada producto con su precio final y cantidad. Responde ÚNICAMENTE con JSON válido, sin explicaciones, sin markdown, sin backticks, exactamente en este formato: {"productos":[{"nombre":"string","precio":0,"cantidad":1}]}. Si hay descuentos, usa el precio final pagado. Si no detectas ningún producto, responde {"productos":[]}.',
               },
               {
                 type: "image_url",
@@ -34,9 +34,26 @@ exports.handler = async (event) => {
     });
 
     const datos = await respuesta.json();
+
+    if (datos.error) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "Error de OpenAI", detalle: datos.error.message }),
+      };
+    }
+
     const contenido = datos.choices?.[0]?.message?.content || "{}";
     const limpio = contenido.replace(/```json|```/g, "").trim();
-    const resultado = JSON.parse(limpio);
+
+    let resultado;
+    try {
+      resultado = JSON.parse(limpio);
+    } catch (e) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "La IA no devolvió JSON válido", respuestaCruda: contenido }),
+      };
+    }
 
     return {
       statusCode: 200,

@@ -178,6 +178,12 @@ document.getElementById("btn-procesar").addEventListener("click", async () => {
 
     const resultado = await respuesta.json();
 
+    if (resultado.error) {
+      estado.textContent = `Error: ${resultado.error}${resultado.detalle ? " — " + resultado.detalle : ""}`;
+      console.error(resultado);
+      return;
+    }
+
     if (!resultado.productos || resultado.productos.length === 0) {
       estado.textContent = "No se detectaron productos. Intenta con una foto más clara.";
       return;
